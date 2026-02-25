@@ -1,0 +1,33 @@
+{
+  "name": "@wlearn/liblinear",
+  "version": "0.1.0",
+  "description": "LIBLINEAR v2.50 compiled to WebAssembly -- linear classification and regression in browsers and Node.js",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src/",
+    "wasm/",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "node --experimental-vm-modules test/test.js",
+    "build": "bash scripts/build-wasm.sh",
+    "verify": "bash scripts/verify-exports.sh"
+  },
+  "dependencies": {
+    "@wlearn/types": "^0.1.0",
+    "@wlearn/core": "^0.1.0"
+  },
+  "keywords": ["liblinear", "svm", "logistic-regression", "machine-learning", "wasm", "webassembly", "wlearn"],
+  "author": "Anton Zemlyansky",
+  "license": "BSD-3-Clause"
+}
