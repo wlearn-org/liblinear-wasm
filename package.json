@@ -24,10 +24,18 @@
     "verify": "bash scripts/verify-exports.sh"
   },
   "dependencies": {
-    "@wlearn/types": "^0.1.0",
-    "@wlearn/core": "^0.1.0"
+    "@wlearn/types": "0.1.0",
+    "@wlearn/core": "0.1.0"
   },
-  "keywords": ["liblinear", "svm", "logistic-regression", "machine-learning", "wasm", "webassembly", "wlearn"],
+  "keywords": [
+    "liblinear",
+    "svm",
+    "logistic-regression",
+    "machine-learning",
+    "wasm",
+    "webassembly",
+    "wlearn"
+  ],
   "author": "Anton Zemlyansky",
   "license": "BSD-3-Clause"
 }
