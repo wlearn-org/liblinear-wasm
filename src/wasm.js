@@ -9,7 +9,7 @@ async function loadLinear(options = {}) {
 
   loading = (async () => {
     // SINGLE_FILE=1: .wasm is embedded in the .js file, no locateFile needed
-    const createLinear = require('../wasm/linear.cjs')
+    const createLinear = require('../wasm/linear.js')
     wasmModule = await createLinear(options)
     return wasmModule
   })()

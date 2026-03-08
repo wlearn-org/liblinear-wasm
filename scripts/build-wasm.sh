@@ -54,7 +54,7 @@ emcc \
   $BLAS_SOURCES \
   -I "${UPSTREAM_DIR}" \
   -I "${UPSTREAM_DIR}/blas" \
-  -o "${OUTPUT_DIR}/linear.cjs" \
+  -o "${OUTPUT_DIR}/linear.js" \
   -s MODULARIZE=1 \
   -s SINGLE_FILE=1 \
   -s EXPORT_NAME=createLinear \
@@ -80,5 +80,5 @@ wasm_embedded: true
 EOF
 
 echo "=== Build complete ==="
-ls -lh "${OUTPUT_DIR}/linear.cjs"
+ls -lh "${OUTPUT_DIR}/linear.js"
 cat "${OUTPUT_DIR}/BUILD_INFO"

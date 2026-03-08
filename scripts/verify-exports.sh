@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-GLUE="${1:-${PROJECT_DIR}/wasm/linear.cjs}"
+GLUE="${1:-${PROJECT_DIR}/wasm/linear.js}"
 
 if [ ! -f "$GLUE" ]; then
   echo "ERROR: glue file not found: $GLUE"
