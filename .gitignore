@@ -2,6 +2,7 @@ node_modules/
 reference/
 build/
 wasm/
+dist/
 *.md
 !README.md
 !CHANGELOG.md

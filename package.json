@@ -13,6 +13,7 @@
   "files": [
     "src/",
     "wasm/",
+    "dist/",
     "LICENSE",
     "README.md",
     "CHANGELOG.md"
@@ -24,11 +25,12 @@
   "scripts": {
     "test": "node test/test.js",
     "build": "bash scripts/build-wasm.sh",
+    "build:browser": "bash scripts/build-browser.sh",
     "verify": "bash scripts/verify-exports.sh"
   },
   "dependencies": {
-    "@wlearn/types": "0.1.0",
-    "@wlearn/core": "0.1.0"
+    "@wlearn/core": "0.1.0",
+    "@wlearn/types": "0.1.0"
   },
   "keywords": [
     "liblinear",
@@ -40,5 +42,9 @@
     "wlearn"
   ],
   "author": "Anton Zemlyansky",
-  "license": "BSD-3-Clause"
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "esbuild": "^0.27.3",
+    "playwright": "^1.58.2"
+  }
 }
