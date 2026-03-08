@@ -9,8 +9,8 @@ const fs = require('fs')
 const ROOT = path.resolve(__dirname, '..')
 
 const bundles = [
-  { name: 'IIFE', file: 'dist/wlearnLiblinear.iife.js', type: 'iife', global: 'wlearnLiblinear' },
-  { name: 'ESM',  file: 'dist/wlearnLiblinear.esm.mjs', type: 'esm' },
+  { name: 'IIFE', file: 'dist/liblinear.js', type: 'iife', global: 'liblinear' },
+  { name: 'ESM',  file: 'dist/liblinear.mjs', type: 'esm' },
 ]
 
 function makeIifeHtml(jsPath, globalName) {

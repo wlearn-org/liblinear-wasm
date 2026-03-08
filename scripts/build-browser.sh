@@ -11,12 +11,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 DIST_DIR="${PROJECT_DIR}/dist"
 
-# Read package name from package.json, derive global name
-# e.g. @wlearn/liblinear -> wlearnLiblinear
-PKG_NAME=$(node -e "
+# Read package name from package.json
+# Browser global + bundle base name: @wlearn/liblinear -> liblinear
+NAME=$(node -e "
   const p = require('${PROJECT_DIR}/package.json')
-  const name = p.name.replace(/^@/, '').replace(/[/-](\w)/g, (_, c) => c.toUpperCase())
-  console.log(name)
+  console.log(p.name.split('/').pop())
 ")
 
 # Auto-infer export names from module.exports in src/index.js
@@ -26,7 +25,8 @@ EXPORTS=$(node -e "
 ")
 
 echo "=== Building browser bundles ==="
-echo "  Package: ${PKG_NAME}"
+echo "  Package: ${NAME}"
+echo "  Files: ${NAME}.js, ${NAME}.mjs"
 echo "  Exports: ${EXPORTS}"
 
 mkdir -p "$DIST_DIR"
@@ -52,22 +52,22 @@ COMMON_FLAGS=(
 npx esbuild "${PROJECT_DIR}/src/index.js" \
   "${COMMON_FLAGS[@]}" \
   --format=iife \
-  --global-name="${PKG_NAME}" \
-  --outfile="${DIST_DIR}/${PKG_NAME}.iife.js"
+  --global-name="${NAME}" \
+  --outfile="${DIST_DIR}/${NAME}.js"
 
 # ESM bundle (IIFE with private global + appended named exports)
-INTERNAL="__${PKG_NAME}"
+INTERNAL="__${NAME}"
 npx esbuild "${PROJECT_DIR}/src/index.js" \
   "${COMMON_FLAGS[@]}" \
   --format=iife \
   --global-name="${INTERNAL}" \
-  --outfile="${DIST_DIR}/${PKG_NAME}.esm.mjs"
+  --outfile="${DIST_DIR}/${NAME}.mjs"
 
 # Append named ESM exports
 IFS=',' read -ra KEYS <<< "$EXPORTS"
 DESTRUCTURE=$(IFS=','; echo "${KEYS[*]}")
 EXPORT_LINE=$(IFS=','; echo "${KEYS[*]}")
-echo "var {${DESTRUCTURE}}=${INTERNAL};export{${EXPORT_LINE}};" >> "${DIST_DIR}/${PKG_NAME}.esm.mjs"
+echo "var {${DESTRUCTURE}}=${INTERNAL};export{${EXPORT_LINE}};" >> "${DIST_DIR}/${NAME}.mjs"
 
 echo "=== Browser bundles built ==="
-ls -lh "${DIST_DIR}/${PKG_NAME}.iife.js" "${DIST_DIR}/${PKG_NAME}.esm.mjs"
+ls -lh "${DIST_DIR}/${NAME}.js" "${DIST_DIR}/${NAME}.mjs"
