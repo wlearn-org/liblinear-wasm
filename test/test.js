@@ -1,9 +1,5 @@
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
-import { readFileSync, existsSync } from 'fs'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+const { join } = require('path')
+const { readFileSync, existsSync } = require('fs')
 
 let passed = 0
 let failed = 0
@@ -29,12 +25,14 @@ function assertClose(a, b, tol, msg) {
   if (diff > tol) throw new Error(msg || `expected ${a} ~ ${b} (diff=${diff}, tol=${tol})`)
 }
 
+async function main() {
+
 // ============================================================
 // WASM loading
 // ============================================================
 console.log('\n=== WASM Loading ===')
 
-const { loadLinear } = await import('../src/wasm.js')
+const { loadLinear } = require('../src/wasm.js')
 const wasm = await loadLinear()
 
 await test('WASM module loads', async () => {
@@ -52,7 +50,7 @@ await test('get_last_error returns string', async () => {
 // ============================================================
 console.log('\n=== LinearModel ===')
 
-const { LinearModel, Solver } = await import('../src/model.js')
+const { LinearModel, Solver } = require('../src/model.js')
 
 await test('create() returns model', async () => {
   const model = await LinearModel.create({ solver: 'L2R_LR', C: 1.0 })
@@ -306,7 +304,7 @@ await test('SVR regression', async () => {
 // ============================================================
 console.log('\n=== Save / Load ===')
 
-const { decodeBundle, load: coreLoad } = await import('@wlearn/core')
+const { decodeBundle, load: coreLoad } = require('@wlearn/core')
 
 await test('save produces WLRN bundle', async () => {
   const model = await LinearModel.create({ solver: 'L2R_LR', C: 1.0 })
@@ -604,3 +602,7 @@ if (!hasFixtures) {
 // ============================================================
 console.log(`\n=== Results: ${passed} passed, ${failed} failed ===\n`)
 process.exit(failed > 0 ? 1 : 0)
+
+}
+
+main()

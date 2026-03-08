@@ -2,7 +2,7 @@
 
 LIBLINEAR v2.50 compiled to WebAssembly. Linear classification and regression in browsers and Node.js.
 
-Based on [LIBLINEAR v2.50](https://www.csie.ntu.edu.tw/~cjlin/liblinear/) (BSD-3-Clause). Zero dependencies. ESM.
+Based on [LIBLINEAR v2.50](https://www.csie.ntu.edu.tw/~cjlin/liblinear/) (BSD-3-Clause). Zero dependencies. CommonJS.
 
 ## Install
 
@@ -13,7 +13,7 @@ npm install @wlearn/liblinear
 ## Quick start
 
 ```js
-import { LinearModel } from '@wlearn/liblinear'
+const { LinearModel } = require('@wlearn/liblinear')
 
 const model = await LinearModel.create({
   solver: 'L2R_LR',

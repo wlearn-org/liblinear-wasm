@@ -1,10 +1,10 @@
-import { getWasm, loadLinear } from './wasm.js'
-import {
+const { getWasm, loadLinear } = require('./wasm.js')
+const {
   normalizeX, normalizeY,
   encodeBundle, decodeBundle,
   register,
   DisposedError, NotFittedError
-} from '@wlearn/core'
+} = require('@wlearn/core')
 
 // FinalizationRegistry safety net -- warns if dispose() was never called
 const leakRegistry = typeof FinalizationRegistry !== 'undefined'
@@ -18,7 +18,7 @@ const leakRegistry = typeof FinalizationRegistry !== 'undefined'
 
 // --- Solver constants ---
 
-export const Solver = {
+const Solver = {
   L2R_LR: 0,
   L2R_L2LOSS_SVC_DUAL: 1,
   L2R_L2LOSS_SVC: 2,
@@ -68,7 +68,7 @@ const LOAD_SENTINEL = Symbol('load')
 
 // --- LinearModel ---
 
-export class LinearModel {
+class LinearModel {
   #handle = null
   #freed = false
   #ptrRef = null
@@ -473,3 +473,5 @@ export class LinearModel {
 
 register('wlearn.liblinear.classifier@1', (m, t, b) => LinearModel._fromBundle(m, t, b))
 register('wlearn.liblinear.regressor@1', (m, t, b) => LinearModel._fromBundle(m, t, b))
+
+module.exports = { LinearModel, Solver }

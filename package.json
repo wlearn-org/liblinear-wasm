@@ -2,10 +2,13 @@
   "name": "@wlearn/liblinear",
   "version": "0.1.0",
   "description": "LIBLINEAR v2.50 compiled to WebAssembly -- linear classification and regression in browsers and Node.js",
-  "type": "module",
+  "type": "commonjs",
   "main": "src/index.js",
   "exports": {
-    ".": "./src/index.js"
+    ".": {
+      "require": "./src/index.js",
+      "default": "./src/index.js"
+    }
   },
   "files": [
     "src/",
@@ -19,7 +22,7 @@
     "access": "public"
   },
   "scripts": {
-    "test": "node --experimental-vm-modules test/test.js",
+    "test": "node test/test.js",
     "build": "bash scripts/build-wasm.sh",
     "verify": "bash scripts/verify-exports.sh"
   },
