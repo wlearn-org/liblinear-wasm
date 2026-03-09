@@ -42,6 +42,10 @@
     "wlearn"
   ],
   "author": "Anton Zemlyansky",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wlearn-org/liblinear-wasm.git"
+  },
   "license": "BSD-3-Clause",
   "devDependencies": {
     "esbuild": "^0.27.3",
