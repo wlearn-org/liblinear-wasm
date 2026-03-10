@@ -26,7 +26,8 @@
     "test": "node test/test.js",
     "build": "bash scripts/build-wasm.sh",
     "build:browser": "bash scripts/build-browser.sh",
-    "verify": "bash scripts/verify-exports.sh"
+    "verify": "bash scripts/verify-exports.sh",
+    "prepack": "node scripts/prepack.js"
   },
   "dependencies": {
     "@wlearn/core": "0.1.0",
