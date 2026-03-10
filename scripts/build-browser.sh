@@ -44,6 +44,7 @@ COMMON_FLAGS=(
   --alias:node:fs=./scripts/empty.js
   --alias:node:crypto=./scripts/empty.js
   --alias:node:path=./scripts/empty.js
+  --alias:ws=./scripts/empty.js
   --define:__dirname='""'
   --define:__filename='""'
 )

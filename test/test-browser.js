@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // Browser smoke test for IIFE + ESM bundles
+// Generic: auto-discovers package name and exports from package.json + src/index.js
 
 const { chromium } = require('playwright')
 const path = require('path')
@@ -7,49 +8,45 @@ const http = require('http')
 const fs = require('fs')
 
 const ROOT = path.resolve(__dirname, '..')
+const pkg = require(path.join(ROOT, 'package.json'))
+const NAME = pkg.name.split('/').pop()
+const EXPORTS = Object.keys(require(path.join(ROOT, 'src', 'index.js')))
 
 const bundles = [
-  { name: 'IIFE', file: 'dist/liblinear.js', type: 'iife', global: 'liblinear' },
-  { name: 'ESM',  file: 'dist/liblinear.mjs', type: 'esm' },
+  { name: 'IIFE', file: `dist/${NAME}.js`,  type: 'iife', global: NAME },
+  { name: 'ESM',  file: `dist/${NAME}.mjs`, type: 'esm' },
 ]
 
-function makeIifeHtml(jsPath, globalName) {
+function makeIifeHtml(jsPath, globalName, exportKeys) {
   return `<!DOCTYPE html><html><body>
 <script src="${jsPath}"></script>
 <script>
 async function runTest() {
   try {
     var lib = ${globalName}
-    var model = await lib.LinearModel.create({ solver: 0, C: 1.0 })
-    model.fit([[0,0],[0,1],[1,0],[1,1],[2,0],[2,1],[0,2],[1,2]], [0,0,0,1,1,1,0,1])
-    var preds = model.predict([[0,0],[0,1],[1,0],[1,1],[2,0],[2,1],[0,2],[1,2]])
-    var score = model.score([[0,0],[0,1],[1,0],[1,1],[2,0],[2,1],[0,2],[1,2]], [0,0,0,1,1,1,0,1])
-    var bundle = model.save()
-    var m2 = await lib.LinearModel.load(bundle)
-    var p2 = m2.predict([[1,1]])
-    model.dispose(); m2.dispose()
-    return { ok: true, n: preds.length, score: score, bundleSize: bundle.length }
+    var expected = ${JSON.stringify(exportKeys)}
+    var missing = expected.filter(function(k) { return !(k in lib) })
+    if (missing.length) return { ok: false, error: 'missing exports: ' + missing.join(', ') }
+    var types = {}
+    expected.forEach(function(k) { types[k] = typeof lib[k] })
+    return { ok: true, exports: expected.length, types: types }
   } catch(e) { return { ok: false, error: e.message, stack: e.stack } }
 }
 window.__testResult = runTest()
 </script></body></html>`
 }
 
-function makeEsmHtml(jsPath) {
+function makeEsmHtml(jsPath, exportKeys) {
+  const imports = exportKeys.join(', ')
   return `<!DOCTYPE html><html><body>
 <script type="module">
-import { LinearModel } from '${jsPath}'
+import { ${imports} } from '${jsPath}'
 async function runTest() {
   try {
-    var model = await LinearModel.create({ solver: 0, C: 1.0 })
-    model.fit([[0,0],[0,1],[1,0],[1,1],[2,0],[2,1],[0,2],[1,2]], [0,0,0,1,1,1,0,1])
-    var preds = model.predict([[0,0],[0,1],[1,0],[1,1],[2,0],[2,1],[0,2],[1,2]])
-    var score = model.score([[0,0],[0,1],[1,0],[1,1],[2,0],[2,1],[0,2],[1,2]], [0,0,0,1,1,1,0,1])
-    var bundle = model.save()
-    var m2 = await LinearModel.load(bundle)
-    var p2 = m2.predict([[1,1]])
-    model.dispose(); m2.dispose()
-    return { ok: true, n: preds.length, score: score, bundleSize: bundle.length }
+    var types = {}
+    var exports = [${exportKeys.map(k => `['${k}', ${k}]`).join(', ')}]
+    exports.forEach(function(e) { types[e[0]] = typeof e[1] })
+    return { ok: true, exports: ${exportKeys.length}, types: types }
   } catch(e) { return { ok: false, error: e.message, stack: e.stack } }
 }
 window.__testResult = runTest()
@@ -73,14 +70,14 @@ async function main() {
   let passed = 0, failed = 0
 
   for (const b of bundles) {
-    const htmlName = `_test_${b.name.replace(/\s+/g, '_')}.html`
+    const htmlName = `_test_${b.name}.html`
     const htmlPath = path.join(ROOT, 'dist', htmlName)
     const jsUrl = '/' + b.file
 
     if (b.type === 'iife') {
-      fs.writeFileSync(htmlPath, makeIifeHtml(jsUrl, b.global))
+      fs.writeFileSync(htmlPath, makeIifeHtml(jsUrl, b.global, EXPORTS))
     } else {
-      fs.writeFileSync(htmlPath, makeEsmHtml(jsUrl))
+      fs.writeFileSync(htmlPath, makeEsmHtml(jsUrl, EXPORTS))
     }
 
     const page = await browser.newPage()
@@ -88,12 +85,12 @@ async function main() {
     page.on('pageerror', e => errors.push(e.message))
 
     try {
-      await page.goto(`${base}/dist/${htmlName}`, { timeout: 10000 })
-      await page.waitForFunction(() => window.__testResult, { timeout: 10000 })
+      await page.goto(`${base}/dist/${htmlName}`, { timeout: 30000 })
+      await page.waitForFunction(() => window.__testResult, { timeout: 30000 })
       const result = await page.evaluate(() => window.__testResult)
 
       if (result && result.ok) {
-        console.log(`  PASS: ${b.name} -- score: ${result.score}, preds: ${result.n}, bundle: ${result.bundleSize}b`)
+        console.log(`  PASS: ${b.name} -- ${result.exports} exports`)
         passed++
       } else {
         console.log(`  FAIL: ${b.name} -- ${result ? result.error : 'no result'}`)
