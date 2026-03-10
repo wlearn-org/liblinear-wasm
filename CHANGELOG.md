@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.0 (unreleased)
+
+- Wrap LinearModel with `createModelClass` for unified task detection
+- Add `task` parameter: `'classification'` or `'regression'`, auto-detected from labels if omitted
+
 ## 0.1.0 (unreleased)
 
 - Initial release

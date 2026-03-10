@@ -83,6 +83,7 @@ const model = await LinearModel.create({ coerce: 'error' })
 Async factory. Loads WASM module, returns a ready-to-use model.
 
 Parameters:
+- `task` -- `'classification'` or `'regression'`. Auto-detected from labels if omitted.
 - `solver` -- solver type string or number (default: `'L2R_LR'`)
 - `C` -- regularization parameter (default: `1.0`)
 - `eps` -- stopping tolerance (default: `0.01`)
