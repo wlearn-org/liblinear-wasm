@@ -2,7 +2,7 @@
 
 LIBLINEAR v2.50 compiled to WebAssembly. Linear classification and regression in browsers and Node.js.
 
-Based on [LIBLINEAR v2.50](https://www.csie.ntu.edu.tw/~cjlin/liblinear/) (BSD-3-Clause). Zero dependencies. CommonJS.
+Part of [wlearn](https://wlearn.org) ([GitHub](https://github.com/wlearn-org), [all packages](https://github.com/wlearn-org/wlearn#repository-structure)). Based on [LIBLINEAR v2.50](https://www.csie.ntu.edu.tw/~cjlin/liblinear/) (BSD-3-Clause). Zero dependencies. CommonJS.
 
 ## Install
 
