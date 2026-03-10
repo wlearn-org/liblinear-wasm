@@ -1,10 +1,13 @@
 const { loadLinear, getWasm } = require('./wasm.js')
-const { LinearModel, Solver } = require('./model.js')
+const { LinearModel: LinearModelImpl, Solver } = require('./model.js')
+const { createModelClass } = require('@wlearn/core')
+
+const LinearModel = createModelClass(LinearModelImpl, LinearModelImpl, { name: 'LinearModel', load: loadLinear })
 
 // Convenience: create, fit, return fitted model
 async function train(params, X, y) {
   const model = await LinearModel.create(params)
-  model.fit(X, y)
+  await model.fit(X, y)
   return model
 }
 
