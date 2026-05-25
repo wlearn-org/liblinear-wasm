@@ -5,6 +5,7 @@ const { spawnSync } = require('child_process')
 const path = require('path')
 
 const pkgDir = path.resolve(__dirname, '..')
+const skipBuild = /^(1|true|yes)$/i.test(process.env.WLEARN_SKIP_BUILD || '')
 
 function run(cmd, args, extraEnv = {}) {
   const result = spawnSync(cmd, args, {
@@ -54,14 +55,17 @@ function findCMakeBin() {
   return null
 }
 
-const cmakeBin = findCMakeBin()
-const buildEnv = {
-  EMSDK_PYTHON: findEmscriptenPython()
+const buildEnv = {}
+
+if (skipBuild) {
+  console.log('prepublish: WLEARN_SKIP_BUILD=1, skipping WASM build')
+} else {
+  const cmakeBin = findCMakeBin()
+  buildEnv.EMSDK_PYTHON = findEmscriptenPython()
+  if (cmakeBin) {
+    buildEnv.PATH = cmakeBin + path.delimiter + process.env.PATH
+  }
+  run('npm', ['run', 'build'], buildEnv)
 }
 
-if (cmakeBin) {
-  buildEnv.PATH = cmakeBin + path.delimiter + process.env.PATH
-}
-
-run('npm', ['run', 'build'], buildEnv)
 run('npm', ['test'], buildEnv)

@@ -9,6 +9,7 @@ const pkg = JSON.parse(fs.readFileSync(path.join(pkgDir, 'package.json'), 'utf8'
 const baseName = pkg.name.split('/').pop()
 const scripts = pkg.scripts || {}
 const files = pkg.files || []
+const skipBuild = /^(1|true|yes)$/i.test(process.env.WLEARN_SKIP_BUILD || '')
 
 function run(cmd, args, extraEnv = {}) {
   const result = spawnSync(cmd, args, {
@@ -49,7 +50,20 @@ if (wantsDist) {
     console.error('prepack: package declares dist/ in files but has no build:browser script')
     process.exit(1)
   }
-  run('npm', ['run', 'build:browser'], buildEnv)
+
+  const distDir = path.join(pkgDir, 'dist')
+  const wantJs = path.join(distDir, baseName + '.js')
+  const wantMjs = path.join(distDir, baseName + '.mjs')
+
+  if (skipBuild) {
+    if (!fs.existsSync(wantJs) || !fs.existsSync(wantMjs)) {
+      console.error('prepack: WLEARN_SKIP_BUILD=1 but browser dist files are missing')
+      process.exit(1)
+    }
+    console.log('prepack: WLEARN_SKIP_BUILD=1, skipping browser dist rebuild')
+  } else {
+    run('npm', ['run', 'build:browser'], buildEnv)
+  }
 }
 
 for (const entry of files) {
