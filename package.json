@@ -1,6 +1,6 @@
 {
   "name": "@wlearn/liblinear",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "LIBLINEAR v2.50 compiled to WebAssembly -- linear classification and regression in browsers and Node.js",
   "type": "commonjs",
   "main": "src/index.js",
@@ -27,11 +27,11 @@
     "build": "bash scripts/build-wasm.sh",
     "build:browser": "bash scripts/build-browser.sh",
     "verify": "bash scripts/verify-exports.sh",
-    "prepack": "node scripts/prepack.js"
+    "prepack": "node scripts/prepack.js",
+    "prepublishOnly": "node scripts/prepublish.js"
   },
   "dependencies": {
-    "@wlearn/core": "0.1.0",
-    "@wlearn/types": "0.1.0"
+    "@wlearn/core": "0.2.0"
   },
   "keywords": [
     "liblinear",
@@ -51,5 +51,9 @@
   "devDependencies": {
     "esbuild": "^0.27.3",
     "playwright": "^1.58.2"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/wlearn-org/liblinear-wasm/issues"
+  },
+  "homepage": "https://wlearn.org"
 }

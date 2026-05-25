@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.2.0 (unreleased)
+## 0.2.0
+- Depend on the CommonJS `@wlearn/core` release
+- Add package homepage and GitHub issue metadata
 
 - Wrap LinearModel with `createModelClass` for unified task detection
 - Add `task` parameter: `'classification'` or `'regression'`, auto-detected from labels if omitted

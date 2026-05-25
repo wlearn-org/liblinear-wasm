@@ -45,16 +45,11 @@ if (wantsWasm) {
 }
 
 if (wantsDist) {
-  const distDir = path.join(pkgDir, 'dist')
-  const wantJs = path.join(distDir, baseName + '.js')
-  const wantMjs = path.join(distDir, baseName + '.mjs')
-  if (!fs.existsSync(wantJs) || !fs.existsSync(wantMjs)) {
-    if (!scripts['build:browser']) {
-      console.error('prepack: package declares dist/ in files but has no build:browser script')
-      process.exit(1)
-    }
-    run('npm', ['run', 'build:browser'], buildEnv)
+  if (!scripts['build:browser']) {
+    console.error('prepack: package declares dist/ in files but has no build:browser script')
+    process.exit(1)
   }
+  run('npm', ['run', 'build:browser'], buildEnv)
 }
 
 for (const entry of files) {

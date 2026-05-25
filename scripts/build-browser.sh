@@ -27,7 +27,7 @@ EXPORTS=$(node -e "
   const src = fs.readFileSync(path.join('${PROJECT_DIR}', 'src', 'index.js'), 'utf8')
   const noComments = src
     .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/(^|[^:])\/\/.*$/gm, '$1')
+    .replace(/(^|[^:])\/\/.*$/gm, (_, prefix) => prefix)
   const match = noComments.match(/module\.exports\s*=\s*\{([\s\S]*?)\}/m)
   if (!match) throw new Error('Could not find module.exports object in src/index.js')
   const exportsText = match[1]
