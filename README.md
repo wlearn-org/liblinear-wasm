@@ -13,6 +13,7 @@ npm install @wlearn/liblinear
 ## Quick start
 
 ```js
+const { readFileSync, writeFileSync } = require('fs')
 const { LinearModel } = require('@wlearn/liblinear')
 
 const model = await LinearModel.create({
@@ -36,12 +37,8 @@ const probs = model.predictProba([[2, 3], [6, 7]])  // Float64Array (nrow * ncla
 const accuracy = model.score([[2, 3], [6, 7]], [0, 1])
 
 // Save / load
-const buf = model.save()  // Uint8Array
-const model2 = await LinearModel.load(buf)
-
-// Clean up -- required, WASM memory is not garbage collected
-model.dispose()
-model2.dispose()
+writeFileSync('linear.wlrn', model.save())
+const model2 = await LinearModel.load(readFileSync('linear.wlrn'))
 ```
 
 ## Typed matrix input (fast path)
@@ -116,15 +113,15 @@ Returns accuracy (classification) or R-squared (regression).
 
 ### `model.save()`
 
-Returns `Uint8Array` (native LIBLINEAR model format).
+Returns `Uint8Array` (WLRN bundle with native LIBLINEAR model artifact).
 
 ### `LinearModel.load(buffer)`
 
-Loads from `Uint8Array`. Returns `Promise<LinearModel>`.
+Loads from WLRN bytes. Returns `Promise<LinearModel>`.
 
 ### `model.dispose()`
 
-Free WASM memory. Required. Idempotent.
+Release WASM memory immediately. Use in long-running apps, workers, cross-validation, and AutoML loops. Idempotent.
 
 ### `model.getParams()` / `model.setParams(p)`
 
@@ -152,7 +149,7 @@ Returns default hyperparameter search space for AutoML.
 
 ## Resource management
 
-WASM heap memory is not garbage collected. Call `.dispose()` on every model when done.
+Use `.dispose()` when creating and discarding many models so WASM memory is released promptly.
 A `FinalizationRegistry` safety net warns if you forget, but do not rely on it.
 
 ## Build from source

@@ -540,6 +540,60 @@ await test('capabilities reflect solver type', async () => {
   svr.dispose()
 })
 
+await test('auto-inferred solver follows classification/regression task changes', async () => {
+  const X = [[-2, -1], [-1, -2], [1, 2], [2, 1], [0.5, 1.5], [-1.5, -0.5]]
+  const classificationY = [0, 0, 1, 1, 1, 0]
+  const regressionY = [-3, -2, 2, 3, 1.5, -1.5]
+  const cases = [
+    ['classification', classificationY, 'regression', regressionY,
+      'L2R_L2LOSS_SVR', 'wlearn.liblinear.regressor@1'],
+    ['regression', regressionY, 'classification', classificationY,
+      'L2R_LR', 'wlearn.liblinear.classifier@1']
+  ]
+
+  for (const [firstTask, firstY, nextTask, nextY, expectedSolver, expectedTypeId] of cases) {
+    const model = await LinearModel.create({ task: firstTask })
+    model.fit(X, firstY)
+    model.setParams({ task: nextTask })
+    model.fit(X, nextY)
+
+    assert(model.getParams().solver === expectedSolver,
+      `${firstTask} -> ${nextTask} kept ${model.getParams().solver}`)
+    assert(model.capabilities.regressor === (nextTask === 'regression'),
+      `capabilities do not match ${nextTask}`)
+    const predictions = model.predict(X)
+    const bytes = model.save()
+    assert(decodeBundle(bytes).manifest.typeId === expectedTypeId,
+      `bundle type does not match ${nextTask}`)
+
+    const loaded = await LinearModel.load(bytes)
+    const loadedPredictions = loaded.predict(X)
+    for (let i = 0; i < predictions.length; i++) {
+      assertClose(predictions[i], loadedPredictions[i], 1e-10,
+        `save/load prediction mismatch at ${i}`)
+    }
+    loaded.dispose()
+    model.dispose()
+  }
+
+  const explicit = await LinearModel.create({ task: 'classification', solver: 'L2R_L2LOSS_SVR' })
+  explicit.fit(X, regressionY)
+  assert(explicit.capabilities.regressor, 'explicit solver must take precedence over task')
+  explicit.dispose()
+
+  const { LinearModel: PublicLinearModel } = require('../src/index.js')
+  const publicModel = await PublicLinearModel.create()
+  publicModel.fit(X, classificationY)
+  assert(publicModel.task === 'classification', 'public model should detect classification')
+  publicModel.setParams({ task: 'regression' }).fit(X, regressionY)
+  assert(publicModel.task === 'regression' && publicModel.capabilities.regressor,
+    'public model should switch to regression')
+  publicModel.setParams({ task: 'classification' }).fit(X, classificationY)
+  assert(publicModel.task === 'classification' && publicModel.capabilities.classifier,
+    'public model should switch back to classification')
+  publicModel.dispose()
+})
+
 // ============================================================
 // Cross-runtime parity (when fixtures exist)
 // ============================================================

@@ -1,6 +1,6 @@
 {
   "name": "@wlearn/liblinear",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "LIBLINEAR v2.50 compiled to WebAssembly -- linear classification and regression in browsers and Node.js",
   "type": "commonjs",
   "main": "src/index.js",
@@ -15,8 +15,7 @@
     "wasm/",
     "dist/",
     "LICENSE",
-    "README.md",
-    "CHANGELOG.md"
+    "README.md"
   ],
   "sideEffects": false,
   "publishConfig": {
@@ -31,7 +30,7 @@
     "prepublishOnly": "node scripts/prepublish.js"
   },
   "dependencies": {
-    "@wlearn/core": "0.2.0"
+    "@wlearn/core": "^0.3.0"
   },
   "keywords": [
     "liblinear",

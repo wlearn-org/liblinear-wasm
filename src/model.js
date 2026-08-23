@@ -76,6 +76,7 @@ class LinearModel {
   #coerce = 'auto'
   #warned = false
   #fitted = false
+  #solverInferred = false
 
   constructor(handle, params, coerce) {
     if (handle === LOAD_SENTINEL) {
@@ -113,6 +114,17 @@ class LinearModel {
   fit(X, y) {
     this.#ensureFitted(false)
     const wasm = getWasm()
+
+    if (this.#params.solver == null && this.#params.task != null) {
+      if (this.#params.task === 'classification') {
+        this.#params.solver = 'L2R_LR'
+      } else if (this.#params.task === 'regression') {
+        this.#params.solver = 'L2R_L2LOSS_SVR'
+      } else {
+        throw new Error(`Unknown task: '${this.#params.task}'. Use 'classification' or 'regression'.`)
+      }
+      this.#solverInferred = true
+    }
 
     // Dispose previous model if refitting
     if (this.#handle) {
@@ -352,6 +364,12 @@ class LinearModel {
   }
 
   setParams(p) {
+    if (Object.prototype.hasOwnProperty.call(p, 'solver')) {
+      this.#solverInferred = false
+    } else if (Object.prototype.hasOwnProperty.call(p, 'task') && this.#solverInferred) {
+      delete this.#params.solver
+      this.#solverInferred = false
+    }
     Object.assign(this.#params, p)
     if ('coerce' in p) this.#coerce = p.coerce
     return this

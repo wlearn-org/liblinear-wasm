@@ -2,15 +2,57 @@
 // Browser smoke test for IIFE + ESM bundles
 // Generic: auto-discovers package name and exports from package.json + src/index.js
 
-const { chromium } = require('playwright')
 const path = require('path')
 const http = require('http')
 const fs = require('fs')
+const CORE_PLAYWRIGHT = path.resolve(__dirname, '..', '..', 'wlearn', 'node_modules', 'playwright')
 
 const ROOT = path.resolve(__dirname, '..')
 const pkg = require(path.join(ROOT, 'package.json'))
 const NAME = pkg.name.split('/').pop()
 const EXPORTS = Object.keys(require(path.join(ROOT, 'src', 'index.js')))
+const chromium = loadChromium()
+
+
+function loadChromium() {
+  const preferred = process.env.WLEARN_PLAYWRIGHT || CORE_PLAYWRIGHT
+  try {
+    return require(preferred).chromium
+  } catch (_) {
+    return require('playwright').chromium
+  }
+}
+
+function executableExists(file) {
+  try {
+    fs.accessSync(file, fs.constants.X_OK)
+    return true
+  } catch (_) {
+    return false
+  }
+}
+
+function chromiumExecutablePath() {
+  if (process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH &&
+      executableExists(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH)) {
+    return process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+  }
+
+  const expected = chromium.executablePath()
+  if (executableExists(expected)) return expected
+
+  const cacheRoot = process.env.PLAYWRIGHT_BROWSERS_PATH || '/opt/ms-playwright'
+  try {
+    const candidates = fs.readdirSync(cacheRoot)
+      .filter(name => /^chromium-\d+$/.test(name))
+      .sort((a, b) => Number(b.split('-')[1]) - Number(a.split('-')[1]))
+      .map(name => path.join(cacheRoot, name, 'chrome-linux64', 'chrome'))
+      .filter(executableExists)
+    if (candidates.length) return candidates[0]
+  } catch (_) {}
+
+  return undefined
+}
 
 const bundles = [
   { name: 'IIFE', file: `dist/${NAME}.js`,  type: 'iife', global: NAME },
@@ -66,7 +108,7 @@ async function main() {
   const port = server.address().port
   const base = `http://127.0.0.1:${port}`
 
-  const browser = await chromium.launch({ headless: true })
+  const browser = await chromium.launch({ headless: true, executablePath: chromiumExecutablePath() })
   let passed = 0, failed = 0
 
   for (const b of bundles) {
