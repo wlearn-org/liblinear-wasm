@@ -10,3 +10,7 @@ dist/
 .DS_Store
 coverage/
 package-lock.json
+
+# Regenerated native parity artifacts
+test/fixtures/*.data.json
+test/fixtures/*.wlrn

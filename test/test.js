@@ -613,27 +613,30 @@ if (!hasFixtures) {
     return readFileSync(join(fixturesDir, name))
   }
 
-  await test('Cross-runtime: classification parity', async () => {
-    const fix = loadFixture('classification')
-    const modelBuf = loadModelFile('classification.model')
+  for (const name of ['classification', 'multiclass']) {
+    await test(`Cross-runtime: ${name} parity`, async () => {
+      const fix = loadFixture(name)
+      const modelBuf = loadModelFile(`${name}.wlrn`)
 
-    const model = await LinearModel.load(modelBuf)
-    const preds = model.predict(fix.X)
+      const model = await LinearModel.load(modelBuf)
+      const preds = model.predict(fix.X)
 
-    assert(preds.length === fix.predictions.length,
-      `length mismatch: ${preds.length} vs ${fix.predictions.length}`)
+      assert(preds.length === fix.predictions.length,
+        `length mismatch: ${preds.length} vs ${fix.predictions.length}`)
 
-    for (let i = 0; i < preds.length; i++) {
-      assert(preds[i] === fix.predictions[i],
-        `pred[${i}]: JS=${preds[i]} Python=${fix.predictions[i]}`)
-    }
+      for (let i = 0; i < preds.length; i++) {
+        assert(preds[i] === fix.predictions[i],
+          `pred[${i}]: JS=${preds[i]} Python=${fix.predictions[i]}`)
+      }
 
-    model.dispose()
-  })
+      model.dispose()
+    })
+
+  }
 
   await test('Cross-runtime: regression parity', async () => {
     const fix = loadFixture('regression')
-    const modelBuf = loadModelFile('regression.model')
+    const modelBuf = loadModelFile('regression.wlrn')
 
     const model = await LinearModel.load(modelBuf)
     const preds = model.predict(fix.X)

@@ -1,85 +1,38 @@
+"""Generate native LIBLINEAR WLRN fixtures and reference predictions.
+
+Run with the core Python package on PYTHONPATH and liblinear-official installed:
+    PYTHONPATH=../wlearn/py python test/fixtures/generate.py
 """
-Generate test fixtures for @wlearn/liblinear cross-runtime parity tests.
-
-Requires: scikit-learn (which wraps LIBLINEAR internally)
-
-Usage:
-    python test/fixtures/generate.py
-"""
-
 import json
-import numpy as np
-from sklearn.svm import LinearSVC
-from sklearn.linear_model import LogisticRegression, Ridge
 from pathlib import Path
 
+import numpy as np
+from wlearn.liblinear import LinearModel
+
 FIXTURES_DIR = Path(__file__).parent
-np.random.seed(42)
+rng = np.random.RandomState(42)
 
 
-def save_fixture(name, X, y, predictions, params):
-    data = {
-        'X': X.tolist(),
-        'y': y.tolist(),
-        'predictions': predictions.tolist(),
-        'params': params
-    }
-    with open(FIXTURES_DIR / f'{name}.data.json', 'w') as f:
-        json.dump(data, f, indent=2)
-    print(f'  Saved {name}.data.json ({len(X)} samples, {X.shape[1]} features)')
+def save_fixture(name, X, y, params):
+    model = LinearModel.create(params)
+    try:
+        model.fit(X, y)
+        model.save(FIXTURES_DIR / f'{name}.wlrn')
+        data = {'X': X.tolist(), 'y': y.tolist(),
+                'predictions': model.predict(X).tolist(), 'params': params}
+        (FIXTURES_DIR / f'{name}.data.json').write_text(json.dumps(data, indent=2))
+    finally:
+        model.dispose()
+    print(f'Saved {name}: native WLRN + reference predictions')
 
 
-def save_liblinear_model(model, name):
-    """Save the underlying LIBLINEAR model in native format."""
-    # sklearn wraps liblinear but doesn't expose save_model directly.
-    # For cross-runtime parity, we save predictions instead.
-    # Native model files can be generated with liblinear's CLI tool.
-    pass
-
-
-# --- Binary classification ---
-print('Binary classification (LogisticRegression / L2R_LR):')
-X = np.random.randn(100, 2).astype(np.float64)
-y = (X[:, 0] + X[:, 1] > 0).astype(np.float64)
-
-clf = LogisticRegression(solver='liblinear', C=1.0, random_state=42, max_iter=1000)
-clf.fit(X, y)
-preds = clf.predict(X)
-
-save_fixture('classification', X, y, preds, {
-    'solver': 'L2R_LR',
-    'C': 1.0,
-})
-
-# --- Multi-class classification ---
-print('Multi-class classification (LogisticRegression / L2R_LR):')
-X_mc = np.random.randn(150, 2).astype(np.float64)
-sums = X_mc[:, 0] + X_mc[:, 1]
-y_mc = np.where(sums < -0.5, 0, np.where(sums < 0.5, 1, 2)).astype(np.float64)
-
-clf_mc = LogisticRegression(solver='liblinear', C=1.0, random_state=42, max_iter=1000)
-clf_mc.fit(X_mc, y_mc)
-preds_mc = clf_mc.predict(X_mc)
-
-save_fixture('multiclass', X_mc, y_mc, preds_mc, {
-    'solver': 'L2R_LR',
-    'C': 1.0,
-})
-
-# --- Regression (SVR) ---
-print('Regression (LinearSVR / L2R_L2LOSS_SVR_DUAL):')
-X_reg = np.random.randn(100, 2).astype(np.float64)
-y_reg = (2 * X_reg[:, 0] + 3 * X_reg[:, 1] + np.random.randn(100) * 0.5).astype(np.float64)
-
-from sklearn.svm import LinearSVR
-reg = LinearSVR(C=1.0, epsilon=0.1, random_state=42, max_iter=10000)
-reg.fit(X_reg, y_reg)
-preds_reg = reg.predict(X_reg)
-
-save_fixture('regression', X_reg, y_reg, preds_reg, {
-    'solver': 'L2R_L2LOSS_SVR_DUAL',
-    'C': 1.0,
-    'p': 0.1,
-})
-
-print('Done.')
+X = rng.randn(100, 2)
+save_fixture('classification', X, (X[:, 0] + X[:, 1] > 0).astype(float),
+             {'solver': 0, 'C': 1.0})
+X = rng.randn(150, 2)
+sums = X[:, 0] + X[:, 1]
+save_fixture('multiclass', X, np.where(sums < -0.5, 0, np.where(sums < 0.5, 1, 2)),
+             {'solver': 0, 'C': 1.0})
+X = rng.randn(100, 2)
+y = 2 * X[:, 0] + 3 * X[:, 1] + rng.randn(100) * 0.5
+save_fixture('regression', X, y, {'solver': 12, 'C': 1.0, 'p': 0.1})
