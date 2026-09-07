@@ -375,9 +375,9 @@ class LinearModel {
     return this
   }
 
-  static defaultSearchSpace() {
+  static defaultSearchSpace(task) {
     return {
-      solver: { type: 'categorical', values: ['L2R_LR', 'L2R_L2LOSS_SVC_DUAL', 'L1R_LR'] },
+      solver: { type: 'categorical', values: task === 'regression' ? ['L2R_L2LOSS_SVR', 'L2R_L2LOSS_SVR_DUAL', 'L2R_L1LOSS_SVR_DUAL'] : ['L2R_LR', 'L2R_L2LOSS_SVC_DUAL', 'L1R_LR'] },
       C: { type: 'log_uniform', low: 1e-4, high: 1e4 },
       eps: { type: 'log_uniform', low: 1e-5, high: 1e-1 }
     }
