@@ -64,13 +64,13 @@ Control how non-typed inputs are handled:
 
 ```js
 // Default: convert silently
-const model = await LinearModel.create({ coerce: 'auto' })
+const automatic = await LinearModel.create({ coerce: 'auto' })
 
 // Warn once per instance when conversion happens
-const model = await LinearModel.create({ coerce: 'warn' })
+const warning = await LinearModel.create({ coerce: 'warn' })
 
 // Throw if input is not already a typed matrix
-const model = await LinearModel.create({ coerce: 'error' })
+const strict = await LinearModel.create({ coerce: 'error' })
 ```
 
 ## API
