@@ -15,7 +15,8 @@
     "wasm/",
     "dist/",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "licenses/"
   ],
   "sideEffects": false,
   "publishConfig": {
